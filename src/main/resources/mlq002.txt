@@ -1,4 +1,4 @@
-# Archivo: mlq003.txt
+# Archivo: mlq002.txt
 # 02102024
 p1; 30; 0; 1; 5
 p2; 12; 1; 2; 4

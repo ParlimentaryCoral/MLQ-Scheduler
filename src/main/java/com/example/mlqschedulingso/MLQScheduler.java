@@ -11,7 +11,6 @@ public class MLQScheduler {
     private final ProcessQueue queue3; // FCFS
     private int currentTime;
 
-    // Esquema B: RR(3), RR(5), FCFS
     public MLQScheduler() {
         this.queue1 = new ProcessQueue(1, "RR", 3);
         this.queue2 = new ProcessQueue(2, "RR", 5);
@@ -21,9 +20,7 @@ public class MLQScheduler {
 
     public void readInputFile(String filename) throws Exception {
         InputStream input = MLQScheduler.class.getClassLoader().getResourceAsStream(filename);
-        if (input == null) {
-            throw new FileNotFoundException("Archivo no encontrado en resources: " + filename);
-        }
+        if (input == null) throw new FileNotFoundException("Archivo no encontrado en resources: " + filename);
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(input))) {
             String line;
@@ -46,14 +43,23 @@ public class MLQScheduler {
     }
 
     public void schedule() {
-        // Encolar solo los que llegan en t=0 (fiel al C++)
-        List<Process> readyAtZero = new ArrayList<>();
+        // Encolar procesos que llegan en t=0
         for (Process p : allProcesses) {
-            if (p.arrivalTime == 0) readyAtZero.add(p);
+            if (p.arrivalTime == 0) {
+                addToQueue(p);
+                p.hasArrived = true;
+            }
         }
-        for (Process p : readyAtZero) addToQueue(p);
 
         while (!queue1.isEmpty() || !queue2.isEmpty() || !queue3.isEmpty()) {
+            // Encolar procesos que acaban de llegar
+            for (Process p : allProcesses) {
+                if (!p.hasArrived && p.arrivalTime <= currentTime) {
+                    addToQueue(p);
+                    p.hasArrived = true;
+                }
+            }
+
             Process current = null;
             ProcessQueue activeQueue = null;
 
@@ -89,13 +95,9 @@ public class MLQScheduler {
             p.hasStarted = true;
         }
 
-        int execTime;
-        if ("RR".equals(q.getAlgorithm())) {
-            execTime = Math.min(q.getTimeQuantum(), p.remainingTime);
-        } else {
-            // FCFS/SJF/STCF aquí corren hasta terminar (igual que tu C++)
-            execTime = p.remainingTime;
-        }
+        int execTime = ("RR".equals(q.getAlgorithm()))
+                ? Math.min(q.getTimeQuantum(), p.remainingTime)
+                : p.remainingTime;
 
         currentTime += execTime;
         p.remainingTime -= execTime;

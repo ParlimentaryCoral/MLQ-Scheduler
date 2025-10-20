@@ -16,6 +16,7 @@ public class Process {
     int turnaroundTime;  // TAT
 
     boolean hasStarted;
+    boolean hasArrived;
 
     public Process(String lbl, int bt, int at, int q, int pr) {
         this.label = lbl;
@@ -30,6 +31,7 @@ public class Process {
         this.responseTime = -1;
         this.turnaroundTime = 0;
         this.hasStarted = false;
+        this.hasArrived = false;
     }
 
     public void calculateMetrics() {
